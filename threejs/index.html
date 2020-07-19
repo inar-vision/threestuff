@@ -4,6 +4,7 @@
 <head>
 	<title>three.js webgl - glTF loader</title>
 	<meta charset="utf-8">
+	<link rel="shortcut icon" href="">
 	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	<!-- <link type="text/css" rel="stylesheet" href="main.css"> -->
 </head>
@@ -12,6 +13,8 @@
 	<script type="module">
 
 		import * as THREE from './node_modules/build/three.module.js';
+
+		import { VRButton } from './node_modules/examples/jsm/webxr/VRButton.js';
 
 		import { OrbitControls } from './node_modules/examples/jsm/controls/OrbitControls.js';
 		import { GLTFLoader } from './node_modules/examples/jsm/loaders/GLTFLoader.js';
@@ -28,7 +31,7 @@
 		var composer;
 
 		init();
-		render();
+		animate();
 
 		function init() {
 
@@ -36,8 +39,9 @@
 			document.body.appendChild(container);
 
 
+
 			camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 50);
-			camera.position.set(0, 0, 50);
+			camera.position.set(0, 0, 5);
 
 			scene = new THREE.Scene();
 
@@ -76,8 +80,8 @@
 
 						});
 
-						gltf.scene.position.set(0, 0, 0);
-						gltf.scene.scale.set(2,2,2);
+						gltf.scene.position.set(0, 0.8, 0);
+						// gltf.scene.scale.set(0.2, 0.2, 0.2);
 						scene.add(gltf.scene);
 
 						roughnessMipmapper.dispose();
@@ -96,29 +100,32 @@
 			renderer.outputEncoding = THREE.sRGBEncoding;
 			renderer.shadowMap.enabled = true;
 			renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
+			renderer.xr.enabled = true;
 			container.appendChild(renderer.domElement);
+
+			document.body.appendChild(VRButton.createButton(renderer));
 
 			var pmremGenerator = new THREE.PMREMGenerator(renderer);
 			pmremGenerator.compileEquirectangularShader();
 
 			controls = new OrbitControls(camera, renderer.domElement);
 			controls.addEventListener('change', render); // use if there is no animation loop
-			controls.minDistance = 2;
-			controls.maxDistance = 30;
-			controls.target.set(0, 0, - 0.2);
+			controls.minDistance = 1;
+			controls.maxDistance = 50;
+			controls.target.set(0, 0, 0);
 			controls.update();
 
 			window.addEventListener('resize', onWindowResize, false);
 
 			var directionalLight = new THREE.DirectionalLight(0xffffff, 1, 100);
-			directionalLight.position.set(0, 25, 0); 			//default; light shining from top
+			directionalLight.position.set(8, 15, 0); 			//default; light shining from top
 			directionalLight.rotateX(45);
 			directionalLight.castShadow = true;            // default false
 			scene.add(directionalLight);
 
 			//Set up shadow properties for the light
-			directionalLight.shadow.mapSize.width = 2048;  // default
-			directionalLight.shadow.mapSize.height = 2048; // default
+			directionalLight.shadow.mapSize.width = 4096;  // default
+			directionalLight.shadow.mapSize.height = 4096; // default
 
 			directionalLight.shadow.camera.near = 0.1;
 			directionalLight.shadow.camera.far = 1000;
@@ -138,16 +145,18 @@
 			plane.receiveShadow = true; //default
 			scene.add(plane);
 			plane.rotation.x -= Math.PI / 2;
-			plane.position.set(0, -2, 0);
+			plane.position.set(0, -0.2, 0);
 
 			composer = new EffectComposer(renderer)
 
 			var renderPass = new RenderPass(scene, camera);
 			composer.addPass(renderPass);
 
-			var glitchPass = new GlitchPass();
-			// var uBloomPass = new SSAOPass(camera);
-			composer.addPass(glitchPass);
+			// var glitchPass = new GlitchPass();
+			// var uBloomPass = new UnrealBloomPass(camera);
+			// composer.addPass(uBloomPass);
+
+			
 
 		}
 
@@ -158,13 +167,15 @@
 
 			renderer.setSize(window.innerWidth, window.innerHeight);
 
-			animate();
+			render();
 
 		}
 
 		function animate() {
 
-			requestAnimationFrame(animate);
+			// renderer.setAnimationLoop( render );
+
+			// requestAnimationFrame(animate);
 
 			composer.render(scene, camera);
 
@@ -173,7 +184,7 @@
 
 		function render() {
 
-			// renderer.render(scene, camera);
+			renderer.render(scene, camera);
 
 		}
 
